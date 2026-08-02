@@ -1,0 +1,11 @@
+annotated-doc==0.0.5
+colorama==0.4.6
+markdown-it-py==4.2.0
+mdurl==0.1.2
+pastel==0.2.1
+poethepoet==0.48.0
+pygments==2.20.0
+pyyaml==6.0.3
+rich==15.0.0
+shellingham==1.5.4
+typer==0.27.0
