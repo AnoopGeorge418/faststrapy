@@ -1,0 +1,10 @@
+[project]
+name = "faststrapy"
+version = "0.1.0"
+description = "A CLI tool to scaffold production-ready projects instantly — inspired by create-next-app, powered by Jinja2 templates and interactive prompts."
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "poethepoet>=0.48.0",
+    "typer>=0.27.0",
+]
