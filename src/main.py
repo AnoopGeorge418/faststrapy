@@ -1,8 +1,22 @@
-import typer 
+from typer import Typer
 
-app = typer.Typer(name="faststrapy")
+from src.configs.commands import sub_command
 
-# app.add_typer(create.app, name="create-app")
+# Typer initilazation
+app = Typer(
+    name="faststrapy",
+    add_completion=True,
+    rich_markup_mode="rich",
+    rich_help_panel="Utils and Configs",
+    suggest_commands=True,
+    pretty_exceptions_enable=True,
+    pretty_exceptions_show_locals=True,
+    pretty_exceptions_short=True,
+    context_settings={"help_option_names": ["-h", "--help"]}
+)
+
+# Registering sub commands
+app.add_typer(sub_command)
 
 if __name__ == "__main__":
     app()
