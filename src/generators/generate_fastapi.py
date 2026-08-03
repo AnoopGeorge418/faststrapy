@@ -1,5 +1,0 @@
-class GenerateFastApiTemplates:
-    """Summary."""
-
-    pass
-    
