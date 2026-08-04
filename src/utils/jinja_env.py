@@ -19,4 +19,3 @@ def render_template(template_name: str, **context) -> str:
 
     template = jinja_env.get_template(template_name)
     return template.render(**context)
-

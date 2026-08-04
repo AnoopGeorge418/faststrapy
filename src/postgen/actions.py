@@ -37,4 +37,3 @@ def run_black(base_path: Path, config: ProjectConfigSchema) -> None:
         _run(["black", "."], cwd=base_path)
     else:
         raise RuntimeError("black not available - skipping formatting")
-
