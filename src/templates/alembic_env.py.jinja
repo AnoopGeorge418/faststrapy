@@ -1,0 +1,6 @@
+config.set_main_option(
+    "sqlalchemy.url",
+    APP_SETTINGS.switch_db_using_env
+)
+
+target_metadata = Base.metadata

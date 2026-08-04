@@ -43,6 +43,11 @@ class Settings(BaseSettings):
             elif self.APP_ENVIRONMENT == "prod":
                 print(f"Connecting to database {self.DATABASE_PRODUCTION_NAME}")
                 return self.DATABASE_PRODUCTION_URL
+
+            raise ValueError(
+                f"Invalid APP_ENVIRONMENT: {self.APP_ENVIRONMENT!r}. "
+                "Expected 'dev' or 'prod'."
+            )
     {% endif %}
 
 @lru_cache
