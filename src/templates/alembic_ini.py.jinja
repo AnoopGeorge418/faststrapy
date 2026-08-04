@@ -1,1 +1,48 @@
-sqlalchemy.url = ""
+[alembic]
+script_location = alembic
+prepend_sys_path = .
+version_path_separator = os
+sqlalchemy.url =
+
+[post_write_hooks]
+{% if use_black %}
+hooks = black
+black.type = console_scripts
+black.entrypoint = black
+black.options = -q
+{% endif %}
+
+[loggers]
+keys = root,sqlalchemy,alembic
+
+[handlers]
+keys = console
+
+[formatters]
+keys = generic
+
+[logger_root]
+level = WARNING
+handlers = console
+qualname =
+
+[logger_sqlalchemy]
+level = WARNING
+handlers =
+qualname = sqlalchemy.engine
+
+[logger_alembic]
+level = INFO
+handlers =
+qualname = alembic
+
+[handler_console]
+class = StreamHandler
+args = (sys.stderr,)
+level = NOTSET
+formatter = generic
+
+[formatter_generic]
+format = %(levelname)-5.5s [%(name)s] %(message)s
+datefmt = %H:%M:%S
+

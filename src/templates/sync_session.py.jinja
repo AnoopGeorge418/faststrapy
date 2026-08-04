@@ -1,0 +1,13 @@
+from sqlalchemy.orm import sessionmaker, Session
+
+from {{ path_name }}.core.config.settings import APP_SETTINGS
+from {{ path_name }}.core.database.connection import sync_engine
+
+
+SyncLocalSession = sessionmaker(
+    bind=sync_engine,
+    class_=Session,
+    autoflush=APP_SETTINGS.DATABASE_AUTO_FLUSH,
+    expire_on_commit=APP_SETTINGS.DATABASE_AUTO_COMMIT,
+)
+
