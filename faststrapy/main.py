@@ -1,6 +1,6 @@
 from typer import Typer
 
-from src.configs.commands import sub_command
+from faststrapy.configs.commands import sub_command
 
 # Typer initilazation
 app = Typer(

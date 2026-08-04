@@ -1,9 +1,9 @@
 from pathlib import Path
 
-from src.generators.fs_utils import write_file
-from src.generators.registry import register_generator
-from src.schemas.project_config import ProjectConfigSchema
-from src.utils.jinja_env import TEMPLATES_DIR, render_template
+from faststrapy.generators.fs_utils import write_file
+from faststrapy.generators.registry import register_generator
+from faststrapy.schemas.project_config import ProjectConfigSchema
+from faststrapy.utils.jinja_env import TEMPLATES_DIR, render_template
 
 
 @register_generator("alembic", order=70)

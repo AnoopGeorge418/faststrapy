@@ -4,8 +4,8 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from src.postgen.registry import register_postgen
-from src.schemas.project_config import ProjectConfigSchema
+from faststrapy.postgen.registry import register_postgen
+from faststrapy.schemas.project_config import ProjectConfigSchema
 
 
 def _run(cmd: list[str], cwd: Path) -> None:

@@ -4,10 +4,10 @@ generator pipeline has written the project to disk.
 
 from pathlib import Path
 
-from src.postgen.registry import registry
-from src.schemas.project_config import ProjectConfigSchema
+from faststrapy.postgen.registry import registry
+from faststrapy.schemas.project_config import ProjectConfigSchema
 
-from src.postgen import actions  # noqa: F401  (registration side-effect)
+from faststrapy.postgen import actions  # noqa: F401  (registration side-effect)
 
 
 def run_postgen(base_path: Path, config: ProjectConfigSchema) -> None:
