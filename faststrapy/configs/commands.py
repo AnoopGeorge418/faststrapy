@@ -74,7 +74,7 @@ def create_app(
     print("  # Windows (PowerShell): .venv\\Scripts\\Activate.ps1")
     print("  # macOS / Linux:        source .venv/bin/activate")
     print()
-    print(f"  # run the project (from the project root)")
+    print("  # run the project (from the project root)")
     print(f"  uv run python -m {path_name}.main")
     print()
     print("  # once it's running:")
