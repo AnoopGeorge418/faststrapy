@@ -3,10 +3,10 @@ from typing import Optional
 
 from typer import Typer
 
-from src.generators import run_generators
-from src.postgen import run_postgen
-from src.prompts import FaststrapyPrompts
-from src.schemas.project_config import PreConfig, ProjectConfigSchema
+from faststrapy.generators import run_generators
+from faststrapy.postgen import run_postgen
+from faststrapy.prompts import FaststrapyPrompts
+from faststrapy.schemas.project_config import PreConfig, ProjectConfigSchema
 
 # typer instance for created sub command
 sub_command = Typer()

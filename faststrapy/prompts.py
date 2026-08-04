@@ -2,7 +2,7 @@ from typer import prompt, confirm
 
 from click import Choice
 
-from src.schemas.project_config import DefaultConfig, PreConfig, ProjectConfigSchema
+from faststrapy.schemas.project_config import DefaultConfig, PreConfig, ProjectConfigSchema
 
 
 class FaststrapyPrompts:

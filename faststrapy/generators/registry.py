@@ -1,8 +1,8 @@
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Callable
 
-from src.schemas.project_config import ProjectConfigSchema
+from faststrapy.schemas.project_config import ProjectConfigSchema
 
 GeneratorFunc = Callable[[Path, ProjectConfigSchema], None]
 

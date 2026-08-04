@@ -8,12 +8,12 @@ entrypoint the CLI calls once a ProjectConfigSchema is ready.
 
 from pathlib import Path
 
-from src.generators.registry import registry
-from src.schemas.project_config import ProjectConfigSchema
+from faststrapy.generators.registry import registry
+from faststrapy.schemas.project_config import ProjectConfigSchema
 
 # Importing for registration side-effects (order doesn't matter here - the
 # registry itself sorts by each generator's `order` before running).
-from src.generators import (  # noqa: F401,E402
+from faststrapy.generators import (  # noqa: F401,E402
     alembic_gen,
     core_config,
     core_database,

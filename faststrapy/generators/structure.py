@@ -1,8 +1,8 @@
 from pathlib import Path
 
-from src.generators.fs_utils import touch_init
-from src.generators.registry import register_generator
-from src.schemas.project_config import ProjectConfigSchema
+from faststrapy.generators.fs_utils import touch_init
+from faststrapy.generators.registry import register_generator
+from faststrapy.schemas.project_config import ProjectConfigSchema
 
 
 @register_generator("project structure", order=10)

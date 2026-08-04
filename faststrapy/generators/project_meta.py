@@ -1,8 +1,8 @@
 from pathlib import Path
 
-from src.generators.fs_utils import write_file
-from src.generators.registry import register_generator
-from src.schemas.project_config import ProjectConfigSchema
+from faststrapy.generators.fs_utils import write_file
+from faststrapy.generators.registry import register_generator
+from faststrapy.schemas.project_config import ProjectConfigSchema
 
 GITIGNORE = """\
 __pycache__/
