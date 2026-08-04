@@ -47,11 +47,14 @@ dependencies = [
 {deps_block}
 ]
 '''
+    requirements_txt = "\n".join(deps) + "\n"
+
     write_file(base_path / "pyproject.toml", pyproject)
+    write_file(base_path / "requirements.txt", requirements_txt)
     write_file(base_path / ".python-version", f"{pre.python_version}\n")
     write_file(base_path / ".gitignore", GITIGNORE)
     write_file(
         base_path / "README.md",
         f"# {pre.project_name}\n\nScaffolded with [faststrapy](https://github.com/AnoopGeorge418/faststrapy).\n\n"
-        f"## Run\n\n```bash\nuv sync\nuv run main.py\n```\n",
+        f"## Run\n\n```bash\nuv sync\nuv run python -m {default.path_name}.main\n```\n",
     )
