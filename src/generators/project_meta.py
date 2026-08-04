@@ -48,6 +48,7 @@ dependencies = [
 ]
 '''
     write_file(base_path / "pyproject.toml", pyproject)
+    write_file(base_path / ".python-version", f"{pre.python_version}\n")
     write_file(base_path / ".gitignore", GITIGNORE)
     write_file(
         base_path / "README.md",

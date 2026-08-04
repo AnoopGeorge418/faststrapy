@@ -11,7 +11,7 @@ from sqlalchemy import engine_from_config
 
 from {{ path_name }}.core.config.settings import APP_SETTINGS
 from {{ path_name }}.core.database.base import Base
-from {{ path_name }}.core.database import model_registry  # noqa: F401  (registers models on Base.metadata)
+from {{ path_name }}.core.database import module_registry  # noqa: F401  (registers models on Base.metadata)
 
 # this is the Alembic Config object, which provides access to values
 # within the .ini file in use.
@@ -89,4 +89,3 @@ if context.is_offline_mode():
 else:
     run_migrations_online()
 {% endif %}
-
