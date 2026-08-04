@@ -1,4 +1,5 @@
 from typer import prompt, confirm
+
 from click import Choice
 
 from src.schemas.project_config import DefaultConfig, PreConfig, ProjectConfigSchema
@@ -13,13 +14,13 @@ class FaststrapyPrompts:
         project_name = prompt("Enter project Name").lower()
 
         print("----------------------------------------------------")
-        
+
         supported_frameworks = ["fastapi", "flask", "django"]
 
         selected_framework = None
         while selected_framework not in supported_frameworks:
             choice = prompt(
-                "Choose a framework", 
+                "Choose a framework",
                 type=Choice(["fastapi", "flask", "django"]),
                 default="fastapi"
             ).lower()
@@ -29,7 +30,7 @@ class FaststrapyPrompts:
             elif choice in ("flask", "django"):
                 print(f"`{choice}` framework support still in progress..")
             elif choice == "fastapi":
-                selected_framework = choice   
+                selected_framework = choice
 
         while True:
             python_version_input = prompt("Select python version", default="3.11")
@@ -42,19 +43,31 @@ class FaststrapyPrompts:
                 break
             print("Unsupported Python version.")
 
-            
-        default_settings = confirm("Do you want continue with recommended default settings")
+
+        default_settings = confirm("Do you want continue with recommended default settings", default=True)
+
+        content_holder_folder = confirm("Do you want all the code to be inside app folder", default=True)
+        if not content_holder_folder:
+            content_holder_folder = prompt(
+                "Enter the root folder name",
+                default="app"
+            )
+        else:
+            # confirm() returns True/False, not a folder name — normalize
+            # to the actual default folder name when the user says "yes"
+            content_holder_folder = "app"
 
         return PreConfig(
             project_name=project_name,
             framework=selected_framework,
             python_version=python_version,
-            default_settings=default_settings
+            default_settings=default_settings,
+            holder_folder=content_holder_folder
         )
 
 
     @staticmethod
-    def _default_prompt_config() -> DefaultConfig:
+    def _default_prompt_config(path_name: str) -> DefaultConfig:
         """The 'recommended defaults' path — no prompts, just sensible values."""
 
         return DefaultConfig(
@@ -71,6 +84,7 @@ class FaststrapyPrompts:
             use_logs=True,
             save_logs_db=False,
             use_black=True,
+            path_name=path_name
         )
 
 
@@ -82,14 +96,14 @@ class FaststrapyPrompts:
         print("----------------------------------------------------")
         print(f"Customizing project `{pre_config.project_name}`...")
 
-        # custom prompts to configure project 
-        use_pydantic = confirm("Use pydanic for schemas/validations/settings?", default=True)
+        # custom prompts to configure project
+        use_pydantic = True
         use_database = confirm("Use a database", default=True)
-        
+
         database_name = None
         database_type = None
         database_host = None
-        
+
         if use_database:
             database_name = prompt(
                 "Choose a database",
@@ -109,9 +123,9 @@ class FaststrapyPrompts:
                     default="local"
                 )
 
-        # orm -->  if database True
+        # orm --> if database True
         use_orm = False
-        orm_name = None 
+        orm_name = None
 
         if use_database:
             use_orm = confirm("Use an ORM?", default=True)
@@ -129,7 +143,7 @@ class FaststrapyPrompts:
             default=pre_config.project_name.upper()
         )
 
-        # alembix -- if orm and db --> True
+        # alembic -- if orm and db --> True
         use_alembic = False
         alembic_type = None
 
@@ -146,7 +160,7 @@ class FaststrapyPrompts:
             save_logs_db = confirm("Persist logs to a file?", default=False)
 
         use_black = confirm("Use Black for formatting?", default=True)
-            
+
 
         default_config = DefaultConfig(
             use_pydantic=use_pydantic,
@@ -162,6 +176,7 @@ class FaststrapyPrompts:
             use_logs=use_logs,
             save_logs_db=save_logs_db,
             use_black=use_black,
+            path_name=pre_config.holder_folder,
         )
 
         return ProjectConfigSchema(pre_config=pre_config, default_config=default_config)
@@ -171,7 +186,9 @@ class FaststrapyPrompts:
         pre_config = FaststrapyPrompts._pre_config_prompts()
         if pre_config.default_settings:
             # User said "yes" -> skips customization, use recommended defaults
-            default_config = FaststrapyPrompts._default_prompt_config()
+            default_config = FaststrapyPrompts._default_prompt_config(
+                path_name=pre_config.holder_folder
+            )
             if default_config.env_prefix is None:
                 default_config.env_prefix = pre_config.project_name.upper()
 
@@ -181,7 +198,7 @@ class FaststrapyPrompts:
             )
         else:
             # User said "no" -> ask for each option manually
-             return FaststrapyPrompts._ask_customize_project_prompts(pre_config)
+            return FaststrapyPrompts._ask_customize_project_prompts(pre_config)
 
 # if __name__ == "__main__":
 #     config = FaststrapyPrompts.build_project_config()

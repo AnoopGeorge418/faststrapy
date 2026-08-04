@@ -1,0 +1,35 @@
+from app.core.config.settings import APP_SETTINGS
+{% if database_type == "async" %}
+from sqlalchemy.ext.asyncio import create_async_engine
+{% else %}
+from sqlalchemy import create_engine
+{% endif %}
+
+
+{% if database_type == "async" %}
+def connect_async_db():
+    """Connects database async engine."""
+
+    async_engine = create_async_engine(
+        url=APP_SETTINGS.switch_db_using_env,
+        echo=APP_SETTINGS.DATABASE_ECHO_LOGS,
+{% if database_host in ("neon", "both") %}
+        connect_args={"ssl": "require"},
+{% endif %}
+        future=True,
+    )
+    return async_engine
+{% else %}
+def sync_engine():
+    """Connects database sync engine."""
+
+    engine = create_engine(
+        url=APP_SETTINGS.switch_db_using_env,
+        echo=APP_SETTINGS.DATABASE_ECHO_LOGS,
+{% if database_host in ("neon", "both") %}
+        connect_args={"ssl": "require"},
+{% endif %}
+        future=True,
+    )
+    return engine
+{% endif %}

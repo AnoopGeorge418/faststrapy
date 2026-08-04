@@ -6,7 +6,7 @@ class PreConfig(BaseModel):
     framework: str 
     python_version: float
     default_settings: bool
-
+    holder_folder: str
     
 
 class DefaultConfig(BaseModel):
@@ -23,7 +23,7 @@ class DefaultConfig(BaseModel):
     use_logs: bool = False
     save_logs_db: bool = False # saves to file
     use_black: bool = False # formatting
-
+    path_name: str
     
 
 class ProjectConfigSchema(BaseModel):
