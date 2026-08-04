@@ -1,3 +1,5 @@
+import os
+import platform
 import shutil
 import subprocess
 from pathlib import Path
@@ -23,6 +25,62 @@ def git_init(base_path: Path, config: ProjectConfigSchema) -> None:
     _run(["git", "init"], cwd=base_path)
     _run(["git", "add", "."], cwd=base_path)
     _run(["git", "commit", "-m", "chore: scaffold project with faststrapy"], cwd=base_path)
+
+
+@register_postgen("ensure uv installed", order=15)
+def ensure_uv(base_path: Path, config: ProjectConfigSchema) -> None:
+    """Installs `uv` globally via its official installer when it's missing,
+    so a user without uv doesn't hit a hard failure on the next step.
+
+    Best-effort and silent-on-success: if the install fails for any reason
+    (offline, no shell access, restricted permissions, unsupported platform),
+    this just raises a friendly RuntimeError - the postgen registry catches
+    it, prints a one-line "skipped" notice, and the rest of the run
+    continues undisturbed.
+    """
+    if shutil.which("uv"):
+        return
+
+    print("    `uv` not found - installing it now via the official installer...")
+
+    system = platform.system()
+    try:
+        if system == "Windows":
+            cmd = [
+                "powershell",
+                "-ExecutionPolicy", "ByPass",
+                "-c", "irm https://astral.sh/uv/install.ps1 | iex",
+            ]
+        else:
+            cmd = ["bash", "-c", "set -o pipefail; curl -LsSf https://astral.sh/uv/install.sh | sh"]
+
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
+        if result.returncode != 0:
+            detail = (result.stderr or result.stdout or "").strip()
+            raise RuntimeError(detail or f"installer exited {result.returncode}")
+    except Exception as exc:
+        raise RuntimeError(
+            f"couldn't auto-install uv ({exc}). Install it yourself from "
+            "https://docs.astral.sh/uv/getting-started/installation/ then run `uv sync`"
+        ) from exc
+
+    if shutil.which("uv"):
+        print("    `uv` installed successfully.")
+        return
+
+    # The installer writes to shell rc files, not this process's env, so a
+    # fresh install is often invisible to `shutil.which` until the next
+    # terminal session. Check the common install dirs and patch PATH for the
+    # rest of this run so uv_sync (below) can still find it immediately.
+    for candidate_dir in (Path.home() / ".local" / "bin", Path.home() / ".cargo" / "bin"):
+        if (candidate_dir / "uv").exists():
+            os.environ["PATH"] = f"{candidate_dir}{os.pathsep}{os.environ.get('PATH', '')}"
+            break
+
+    if shutil.which("uv"):
+        print("    `uv` installed successfully.")
+    else:
+        raise RuntimeError("uv installed but not yet on PATH - restart your terminal, then run `uv sync`")
 
 
 @register_postgen("dependency install (uv sync)", order=20)

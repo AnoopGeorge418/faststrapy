@@ -61,8 +61,28 @@ def create_app(
         print("Running post-generation steps...")
         run_postgen(output_root, config)
 
+    path_name = config.default_config.path_name
+
     print("----------------------------------------------------")
-    print(f"Done. `cd {output_root}` to get started.")
+    print("Done. Next steps:")
+    print("----------------------------------------------------")
+    print(f"  cd {output_root}")
+    print()
+    print("  # activate the virtual environment uv created")
+    print("  # (optional — `uv run` below works without activating)")
+    print("  # Windows (cmd):        .venv\\Scripts\\activate")
+    print("  # Windows (PowerShell): .venv\\Scripts\\Activate.ps1")
+    print("  # macOS / Linux:        source .venv/bin/activate")
+    print()
+    print(f"  # run the project (from the project root)")
+    print(f"  uv run python -m {path_name}.main")
+    print()
+    print("  # once it's running:")
+    print("  http://127.0.0.1:8000")
+    print("  http://127.0.0.1:8000/api/v1/health-route   (Health Route)")
+    print("  http://127.0.0.1:8000/docs   (interactive Swagger UI)")
+    print("  http://127.0.0.1:8000/redoc  (ReDoc API reference)")
+    print("----------------------------------------------------")
 
 
 @sub_command.command(help="logs everything based on level to db if --upgrade used else to file if --downgrade is used")

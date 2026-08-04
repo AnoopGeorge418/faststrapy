@@ -12,4 +12,4 @@ def generate_entrypoint(base_path: Path, config: ProjectConfigSchema) -> None:
         "project_name": config.pre_config.project_name,
         "path_name": config.default_config.path_name,
     }
-    write_file(base_path / "main.py", render_template("main.py.jinja", **ctx))
+    write_file(base_path / ctx["path_name"] / "main.py", render_template("main.py.jinja", **ctx))
