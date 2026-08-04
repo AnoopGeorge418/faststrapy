@@ -1,10 +1,23 @@
-from app.core.database.async_session import AsyncLocalSession
+{% if database_type == "async" %}
+from {{ path_name }}.core.database.async_session import AsyncLocalSession
 
 
 async def get_db():
-    """Database Dependency"""
+    """Database dependency - yields an async session per request."""
 
     async with AsyncLocalSession() as async_local_session:
         yield async_local_session
+{% else %}
+from {{ path_name }}.core.database.sync_session import SyncLocalSession
 
-    
+
+def get_db():
+    """Database dependency - yields a sync session per request."""
+
+    db = SyncLocalSession()
+    try:
+        yield db
+    finally:
+        db.close()
+{% endif %}
+
