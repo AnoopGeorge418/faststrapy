@@ -71,7 +71,9 @@ Done. Next steps:
 
 ```bash
 # with uv (recommended)
-uv add faststrapy
+uv tool install faststrapy
+
+# uv add faststrapy
 
 # or run it once without installing, always pulling the latest version
 uvx faststrapy create-app
