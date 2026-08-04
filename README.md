@@ -72,6 +72,7 @@ Done. Next steps:
 ```bash
 # with uv (recommended)
 uv tool install faststrapy
+faststrapy create-app
 
 # uv add faststrapy
 
