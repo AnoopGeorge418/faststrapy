@@ -1,0 +1,28 @@
+# Changelog
+
+All notable changes to this project are documented here.
+
+The format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Dates are release-publish dates on PyPI, not commit dates.
+
+## [0.2.0] - 2026-08-05
+
+### Added
+- **Docker config generation.** `faststrapy create-app` now scaffolds a `Dockerfile`, `.dockerignore`, and `docker-compose.yml` alongside every project — opt-in via a prompt, on by default. `docker-compose.yml` automatically adds a `postgres:16-alpine` service and named volume when the project is configured for local Postgres, and omits it entirely for SQLite-only projects.
+  ([#19](https://github.com/AnoopGeorge418/faststrapy/issues/19) — thanks [@Ali-TM-original](https://github.com/Ali-TM-original) for the suggestion and starter template)
+- New `use_docker` field on `DefaultConfig`, prompted in both the recommended-defaults and manual-customize flows.
+- New postgen step: `requirements.txt` is now frozen from the synced `.venv` via `uv pip freeze` right after `uv sync`, giving real pinned versions instead of a hand-built loose list. The generation-time list is kept as a fallback if `uv` is unavailable or postgen is skipped (e.g. `--skip-postgen`).
+
+### Fixed
+- `git init` no longer nests a new repository inside an existing parent repository without asking. If a `.git` folder is found in the parent directory (e.g. scaffolding inside an existing monorepo/workspace), you're now prompted: *"A git repo already exists in the parent folder. Initialize a new one inside this project too?"* (default: **no**).
+
+## [0.1.0] - Initial release
+
+### Added
+- `faststrapy create-app` — interactive and non-interactive project scaffolding for FastAPI, inspired by `create-next-app`.
+- Layered generator pipeline: project metadata (`pyproject.toml`, `requirements.txt`, `.gitignore`, `README.md`), project structure, settings + `.env`, optional SQLAlchemy database layer, optional structured logging, health-check route, `main.py` entrypoint, optional Alembic migrations.
+- Post-generation pipeline: `git init` + first commit, automatic `uv` install if missing, `uv sync`, optional Black formatting.
+- `faststrapy logs` command to report where a generated project's logs are configured to go.
+- Published to PyPI, installable via `uv tool install faststrapy`, `uvx faststrapy`, or `pip install faststrapy`.
+
+[0.2.0]: https://github.com/AnoopGeorge418/faststrapy/releases/tag/v0.2.0
+[0.1.0]: https://github.com/AnoopGeorge418/faststrapy/releases/tag/v0.1.0
