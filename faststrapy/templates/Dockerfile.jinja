@@ -1,0 +1,17 @@
+FROM python:{{ python_version }}-slim
+
+WORKDIR /app
+
+# Copy dependency list first so this layer is cached whenever only app
+# code changes, not when dependencies change.
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the rest of the app
+COPY . .
+
+# Expose the port the app runs on
+EXPOSE 8000
+
+# Run the app
+CMD ["uvicorn", "{{ path_name }}.main:app", "--host", "0.0.0.0", "--port", "8000"]

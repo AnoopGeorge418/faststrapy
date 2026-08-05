@@ -4,6 +4,8 @@ import shutil
 import subprocess
 from pathlib import Path
 
+from typer import confirm
+
 from faststrapy.postgen.registry import register_postgen
 from faststrapy.schemas.project_config import ProjectConfigSchema
 
@@ -18,10 +20,38 @@ def _run(cmd: list[str], cwd: Path) -> None:
         )
 
 
+def _capture(cmd: list[str], cwd: Path) -> str:
+    """Same as `_run`, but returns stdout instead of discarding it."""
+    result = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True)
+    if result.returncode != 0:
+        detail = (result.stderr or result.stdout or "").strip()
+        raise RuntimeError(
+            f"`{' '.join(cmd)}` exited {result.returncode}"
+            + (f": {detail}" if detail else "")
+        )
+    return result.stdout
+
+
 @register_postgen("git init", order=10)
 def git_init(base_path: Path, config: ProjectConfigSchema) -> None:
     if not shutil.which("git"):
         raise RuntimeError("git not found on PATH")
+
+    # If the parent folder already has its own git repo (e.g. this project
+    # was scaffolded inside an existing monorepo/workspace), don't nest a
+    # second repo inside it without asking first.
+    parent_git_exists = (base_path.parent / ".git").exists()
+
+    if parent_git_exists:
+        init_anyway = confirm(
+            "A git repo already exists in the parent folder. "
+            "Initialize a new one inside this project too?",
+            default=False,
+        )
+        if not init_anyway:
+            print("    Skipping git init - using the existing repo in the parent folder.")
+            return
+
     _run(["git", "init"], cwd=base_path)
     _run(["git", "add", "."], cwd=base_path)
     _run(["git", "commit", "-m", "chore: scaffold project with faststrapy"], cwd=base_path)
@@ -89,6 +119,25 @@ def uv_sync(base_path: Path, config: ProjectConfigSchema) -> None:
         _run(["uv", "sync"], cwd=base_path)
         return
     raise RuntimeError("uv not found on PATH - run `uv sync` yourself once it's installed")
+
+
+@register_postgen("freeze requirements.txt", order=25)
+def freeze_requirements(base_path: Path, config: ProjectConfigSchema) -> None:
+    """Overwrites the hand-built requirements.txt (written at generation
+    time, before any real install has happened) with the actual resolved
+    versions from the synced .venv - same idea as `pip freeze`, but backed
+    by `uv`'s resolver so the pins reflect what's really installed.
+
+    Depends on `uv_sync` (order=20) having already created the .venv this
+    run reads from - if that step failed or was skipped, this one falls
+    back gracefully (best-effort, like every other postgen step) and the
+    project keeps the generation-time requirements.txt instead.
+    """
+    if not shutil.which("uv"):
+        raise RuntimeError("uv not found on PATH - keeping the generated requirements.txt")
+
+    frozen = _capture(["uv", "pip", "freeze"], cwd=base_path)
+    (base_path / "requirements.txt").write_text(frozen, encoding="utf-8")
 
 
 @register_postgen("format with black", order=30)

@@ -23,6 +23,7 @@ class DefaultConfig(BaseModel):
     use_logs: bool = False
     save_logs_db: bool = False # saves to file
     use_black: bool = False # formatting
+    use_docker: bool = False # Dockerfile + docker-compose.yml
     path_name: str
     
 
