@@ -17,6 +17,7 @@ from faststrapy.generators import (  # noqa: F401,E402
     alembic_gen,
     core_config,
     core_database,
+    docker_gen,
     entrypoint,
     logging_gen,
     project_meta,

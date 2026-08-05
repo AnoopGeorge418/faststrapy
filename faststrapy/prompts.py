@@ -84,6 +84,7 @@ class FaststrapyPrompts:
             use_logs=True,
             save_logs_db=False,
             use_black=True,
+            use_docker=True,
             path_name=path_name
         )
 
@@ -161,6 +162,8 @@ class FaststrapyPrompts:
 
         use_black = confirm("Use Black for formatting?", default=True)
 
+        use_docker = confirm("Generate Docker config (Dockerfile, docker-compose.yml)?", default=True)
+
 
         default_config = DefaultConfig(
             use_pydantic=use_pydantic,
@@ -176,6 +179,7 @@ class FaststrapyPrompts:
             use_logs=use_logs,
             save_logs_db=save_logs_db,
             use_black=use_black,
+            use_docker=use_docker,
             path_name=pre_config.holder_folder,
         )
 
