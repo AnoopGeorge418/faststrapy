@@ -16,10 +16,12 @@ Generating `my-service` at /home/anoop/my-service
   → health route
   → main.py entrypoint
   → alembic
+  → docker config
 Running post-generation steps...
   → git init
   → ensure uv installed
   → dependency install (uv sync)
+  → freeze requirements.txt
   → format with black
 ----------------------------------------------------
 Done. Next steps:
@@ -66,6 +68,7 @@ Done. Next steps:
 - Python **3.10+** (the generated projects default to 3.11, configurable per-project down to 3.10 during the prompts)
 - [`uv`](https://docs.astral.sh/uv/) — not strictly required to install faststrapy itself, but the post-generation step uses it to install the new project's dependencies. If it's missing, faststrapy installs it for you automatically (see [Post-generation steps](#post-generation-steps)).
 - `git` — used for the automatic `git init` + first commit after scaffolding. Not required to run faststrapy itself, but that step is skipped with a warning if git isn't on `PATH`.
+- [Docker](https://docs.docker.com/get-docker/) — only needed if you plan to build/run a generated project's `Dockerfile` / `docker-compose.yml`. Not required by faststrapy itself; Docker config files are generated on disk either way.
 
 ## Installation
 
@@ -170,22 +173,28 @@ my-service/
 ├── .gitignore
 ├── .python-version
 ├── pyproject.toml              #    dependencies resolved from your choices
-├── requirements.txt            #    same deps, plain pip-installable format
+├── requirements.txt            #    frozen from the synced .venv after uv sync
+├── Dockerfile                  #    only if Docker config was enabled
+├── .dockerignore                #   only if Docker config was enabled
+├── docker-compose.yml           #   only if Docker config was enabled;
+│                                #   includes a postgres service + volume
+│                                #   when the project uses local Postgres
 └── README.md
 ```
 
 Notes on a few of the choices baked into this layout:
 
 - **`main.py` lives inside `app/`, not the project root.** The app is meant to be run as a module — `uv run python -m app.main` — which keeps `app.core...`-style absolute imports working correctly. Running it as a bare script (`python app/main.py`) would break those imports, since Python only adds the script's own directory to `sys.path`, not the project root.
-- **Both `pyproject.toml` and `requirements.txt` are generated**, with matching dependency lists, so the project is installable either the `uv`/PEP 621 way or the classic `pip install -r requirements.txt` way.
-- **`SERVER_PATH` in `.env`** is set to `app.main:app` (or `<your-folder-name>.main:app` if you renamed the holder folder) — this is the import string `uvicorn.run()` uses internally, and it's kept in sync with wherever `main.py` actually is.
+- **Both `pyproject.toml` and `requirements.txt` are generated.** `requirements.txt` starts as a hand-built list matching `pyproject.toml` at generation time, then gets overwritten with the real, pinned output of `uv pip freeze` once dependencies are synced (see [Post-generation steps](#post-generation-steps)) — so the project stays installable either the `uv`/PEP 621 way or the classic `pip install -r requirements.txt` way, with accurate pins either way.
+- **`SERVER_PATH` in `.env`** is set to `app.main:app` (or `<your-folder-name>.main:app` if you renamed the holder folder) — this is the import string `uvicorn.run()` uses internally, and it's kept in sync with wherever `main.py` actually is. The generated `Dockerfile`'s `CMD` uses the same import string.
+- **Docker config is opt-in but on by default.** `docker-compose.yml` only adds a `db` service (Postgres 16, with a named volume) when your project is actually configured for local Postgres — SQLite-only projects get just the app service, no dead container definition.
 
 ## How the prompts work
 
 1. **Pre-config** — project name, framework (`fastapi`; `flask`/`django` are recognized but not yet implemented — see [Roadmap](#roadmap--known-limitations)), Python version, and whether the app's code should live inside a subfolder (default: yes, `app/`).
 2. You're then asked: **use the recommended defaults, or customize?**
-   - **Recommended defaults**: Pydantic ✓, SQLAlchemy ORM ✓, Postgres (both local + Neon-ready) ✓, async DB access, Alembic ✓ (async), logging ✓ (console only), Black ✓.
-   - **Customize**: one prompt per option — database on/off, which database, sync vs async, ORM on/off, env var prefix, Alembic on/off, logging on/off (and whether to persist to a file), Black on/off.
+   - **Recommended defaults**: Pydantic ✓, SQLAlchemy ORM ✓, Postgres (both local + Neon-ready) ✓, async DB access, Alembic ✓ (async), logging ✓ (console only), Black ✓, Docker config ✓.
+   - **Customize**: one prompt per option — database on/off, which database, sync vs async, ORM on/off, env var prefix, Alembic on/off, logging on/off (and whether to persist to a file), Black on/off, Docker config on/off.
 
 All of this is captured in [`ProjectConfigSchema`](faststrapy/schemas/project_config.py) (`PreConfig` + `DefaultConfig`), which is what every generator function receives.
 
@@ -194,9 +203,12 @@ All of this is captured in [`ProjectConfigSchema`](faststrapy/schemas/project_co
 After the files are written, faststrapy runs (unless `--skip-postgen`):
 
 1. **`git init`** — initializes a repo and creates the first commit (`chore: scaffold project with faststrapy`). Skipped with a warning if `git` isn't installed, or if your global `git` identity (`user.name`/`user.email`) isn't configured yet — the commit will fail but nothing else is affected.
+
+   If the **parent** folder already has its own `.git` (e.g. you scaffolded inside an existing monorepo or workspace), faststrapy won't nest a second repo silently — it asks first: *"A git repo already exists in the parent folder. Initialize a new one inside this project too?"* (default: **no**). Answer no and the new project is left for the parent repo to track; answer yes and it behaves exactly as if there were no parent repo at all.
 2. **`uv` auto-install** — if `uv` isn't already on your `PATH`, faststrapy runs the official installer for your OS (the `curl | sh` one-liner on macOS/Linux, the `irm | iex` one on Windows) so the next step can succeed. This is best-effort: if it fails (offline, restricted permissions, unsupported shell), you get a one-line notice and the run continues — nothing crashes.
 3. **`uv sync`** — installs the generated project's dependencies into a fresh `.venv`.
-4. **Black formatting** — if you kept Black enabled, the generated code is formatted in place, pinned to the project's target Python version.
+4. **Freeze `requirements.txt`** — runs `uv pip freeze` against the just-synced `.venv` and overwrites `requirements.txt` with the real, pinned versions actually installed, replacing the hand-built loose list written at generation time. If `uv` isn't available or this step is skipped, the generation-time file is kept as a fallback.
+5. **Black formatting** — if you kept Black enabled, the generated code is formatted in place, pinned to the project's target Python version.
 
 Every post-generation step is independently best-effort: if one fails, you get a `⚠ skipped (<reason>)` line and the rest still run. Nothing about a failed post-gen step blocks the "Done" summary at the end.
 
@@ -247,11 +259,15 @@ faststrapy/
 │   ├── routes.py             #  order=50  — health_route.py
 │   ├── entrypoint.py        #  order=60  — main.py
 │   ├── alembic_gen.py       #  order=70  — alembic/ (conditional)
+│   ├── docker_gen.py        #  order=80  — Dockerfile, .dockerignore,
+│   │                        #  docker-compose.yml (conditional)
 │   └── fs_utils.py          #  write_file() / touch_init() helpers
 ├── postgen/                  # Runs after files exist on disk
 │   ├── registry.py          #  @register_postgen("name", order=N), catches
 │                            #  exceptions per-step (best-effort by design)
-│   └── actions.py           #  git init → ensure uv installed → uv sync → black
+│   └── actions.py           #  git init (parent-.git aware) → ensure uv
+│                            #  installed → uv sync → freeze requirements.txt
+│                            #  → black
 ├── templates/                # .jinja templates rendered by the generators
 │   └── *.py.jinja
 └── utils/
@@ -321,6 +337,8 @@ Same pattern in `faststrapy/postgen/actions.py`, decorated with `@register_postg
 ### Reporting issues
 
 Open a GitHub issue with: the exact `faststrapy create-app` command you ran (flags included), your OS and Python version, and the full output. If it's about the generated project rather than the CLI itself, include the relevant generated file.
+
+See [CONTRIBUTORS.md](CONTRIBUTORS.md) for everyone who's helped so far, and [CHANGELOG.md](CHANGELOG.md) for the release history.
 
 ## Roadmap / known limitations
 
