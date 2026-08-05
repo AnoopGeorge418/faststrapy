@@ -158,7 +158,7 @@ class FaststrapyPrompts:
         save_logs_db = False
 
         if use_logs:
-            save_logs_db = confirm("Persist logs to a file?", default=False)
+            save_logs_db = confirm("Persist logs to a file?", default=True)
 
         use_black = confirm("Use Black for formatting?", default=True)
 
