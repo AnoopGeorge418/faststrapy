@@ -1,0 +1,17 @@
+# Contributors
+
+Thanks to everyone who has helped improve faststrapy — through code, ideas, or bug reports.
+
+## Maintainer
+
+- [@AnoopGeorge418](https://github.com/AnoopGeorge418) — creator and maintainer
+
+## Contributors
+
+- [@Ali-TM-original](https://github.com/Ali-TM-original) — proposed and provided a starter template for Docker config generation ([#19](https://github.com/AnoopGeorge418/faststrapy/issues/19)), shipped in v0.2.0
+
+---
+
+## Want to be listed here?
+
+See [Contributing](README.md#contributing) in the README. Code contributions (merged PRs) are credited automatically by GitHub's Contributors graph; this file also credits people whose issues, ideas, or feedback shaped a release even without a direct PR.
